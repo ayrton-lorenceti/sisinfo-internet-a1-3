@@ -13,11 +13,11 @@ router.post("/inserir", async (req, res, next) => {
     try {
         await sequelize.authenticate();
     
-        const freight = Freight.init(sequelize);
+        await Freight.init(sequelize);
     
         // await freight.sync({ force: true });
 
-        const result = await freight.create(req.body);
+        const result = await Freight.create(req.body);
 
         res.status(201).json({ 
             status: "201",
@@ -75,7 +75,7 @@ router.get("/calcular", async (req, res, next) => {
     try {
         await sequelize.authenticate();
 
-        const freightCalculation = FreightCalculation(sequelize);
+        const freightCalculation = await FreightCalculation(sequelize);
 
         const result = await freightCalculation.findOne({
             where: {
@@ -140,7 +140,7 @@ router.patch("/carregar", async (req, res, next) => {
     try {
         await sequelize.authenticate();
 
-        const freight = Freight.init(sequelize);
+        await Freight.init(sequelize);
 
         await Freight.update({
             deliveryStatus: "em trânsito"
@@ -170,8 +170,41 @@ router.patch("/carregar", async (req, res, next) => {
     }
 });
 
-router.patch("/entrega-finalizada", async (req, res, next) => {
+router.patch("/finalizar", async (req, res, next) => {
+    const sequelize = database();
+    const { "order-id": orderId } = req.query;
 
+    try {
+        await sequelize.authenticate();
+
+        await Freight.init(sequelize);
+
+        await Freight.update({
+            deliveryStatus: "entregue"
+        }, {
+            where: {
+                orderId: orderId
+            }
+        });
+
+        res.status(200).json({ 
+            status: "200",
+            code: 1,
+            message: "Pedido atualizado com sucesso.",
+        });
+    } 
+    catch (error) {
+        console.log("\n Error on updating freight delivery status: ", error, "\n");
+
+        res.status(500).json({
+            status: 500,
+            errorId: 0,
+            message: "Erro ao atualizar pedido do frete."
+        });
+    }
+    finally {
+        await sequelize.close();
+    }
 });
 
 router.get("/rastrear-pedido", async (req, res, next) => {
