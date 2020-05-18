@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const database = require("../config/database");
+
 const Freight = require("../models/freight");
 const FreightCalculation = require("../models/freight-calculation");
+
+const Utils = require("../utils/utils");
 
 router.post("/inserir", async (req, res, next) => {
     const sequelize = database();
@@ -28,7 +31,7 @@ router.post("/inserir", async (req, res, next) => {
         res.status(500).json({
             status: 500,
             errorId: 0,
-            message: "Erro na gravação do pedido do frete"
+            message: "Erro na gravação do pedido do frete."
         });
     }
     finally {
@@ -69,8 +72,6 @@ router.get("/calcular", async (req, res, next) => {
     const sequelize = database();
     const { "origin-uf": originUF, "destination-uf": destinationUF, "product-weight": productWeight } = req.query;
 
-    console.log("\n\n", req.query, "\n\n");
-
     try {
         await sequelize.authenticate();
 
@@ -83,20 +84,53 @@ router.get("/calcular", async (req, res, next) => {
             }
         });
 
-        res.status(200).json(result.dataValues);
+        const freight: object = {
+            freightValue: Utils.calculateFreightPrice(productWeight),
+            estimatedTimeToDeliver: result.dataValues.daysToDeliver
+        }
+
+        res.status(200).json(freight);
     } 
     catch (error) {
         console.log("\n Error on calculating freight: ", error, "\n");
 
-        res.status(500).json({});
+        res.status(500).json({
+            freightValue: 0,
+            estimatedTimeToDeliver: 0
+        });
     }
     finally {
         await sequelize.close();
     }
 });
 
-router.get("/listar-fretes-pendentes", (req, res, next) => {
+router.get("/listar", async (req, res, next) => {
+    const sequelize = database();
+    const { "origin-uf": originUF, "destination-uf": destinationUF } = req.query;
 
+    try {
+        await sequelize.authenticate();
+
+        const freight = Freight.init(sequelize);
+
+        const pendingFreights = await freight.findAll({
+            where: {
+                originUF: originUF,
+                destinationUF: destinationUF,
+                deliveryStatus: "pendente"
+            }
+        });
+
+        res.status(200).json(pendingFreights);
+    } 
+    catch (error) {
+        console.log("\n Error on pending freights: ", error, "\n");
+
+        res.status(500).json({});
+    }
+    finally {
+        await sequelize.close();
+    }
 });
 
 router.patch("/carregar-pedido", (req, res, next) => {

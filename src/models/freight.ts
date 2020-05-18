@@ -26,6 +26,17 @@ module.exports = class Freight extends Sequelize.Model {
                     isAlpha: true,
                     isUppercase: true
                 }
+            },
+            deliveryStatus: {
+                type: Sequelize.ENUM,
+                values: ["pendente", "em trânsito", "entregue"],
+                allowNull: false,
+                validate: {
+                    notNull: true,
+                    isAlpha: true,
+                    isLowercase: true,
+                    isIn: [["pendente", "em trânsito", "entregue"]]
+                }
             }
         }, {
             tableName: "fretes",
