@@ -6,6 +6,7 @@ module.exports = class Freight extends Sequelize.Model {
             orderId: {
                 type: Sequelize.INTEGER,
                 notNull: true,
+                unique: true,
                 validate: {
                     isNumeric: true,
                     isInt: true,
@@ -31,9 +32,9 @@ module.exports = class Freight extends Sequelize.Model {
                 type: Sequelize.ENUM,
                 values: ["pendente", "em trânsito", "entregue"],
                 allowNull: false,
+                isAlpha: true,
                 validate: {
                     notNull: true,
-                    isAlpha: true,
                     isLowercase: true,
                     isIn: [["pendente", "em trânsito", "entregue"]]
                 }

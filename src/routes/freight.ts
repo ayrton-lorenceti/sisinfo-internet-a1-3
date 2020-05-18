@@ -133,15 +133,48 @@ router.get("/listar", async (req, res, next) => {
     }
 });
 
-router.patch("/carregar-pedido", (req, res, next) => {
+router.patch("/carregar", async (req, res, next) => {
+    const sequelize = database();
+    const { "order-id": orderId } = req.query;
+
+    try {
+        await sequelize.authenticate();
+
+        const freight = Freight.init(sequelize);
+
+        await Freight.update({
+            deliveryStatus: "em trânsito"
+        }, {
+            where: {
+                orderId: orderId
+            }
+        });
+
+        res.status(200).json({ 
+            status: "200",
+            code: 1,
+            message: "Pedido atualizado com sucesso.",
+        });
+    } 
+    catch (error) {
+        console.log("\n Error on updating freight delivery status: ", error, "\n");
+
+        res.status(500).json({
+            status: 500,
+            errorId: 0,
+            message: "Erro ao atualizar pedido do frete."
+        });
+    }
+    finally {
+        await sequelize.close();
+    }
+});
+
+router.patch("/entrega-finalizada", async (req, res, next) => {
 
 });
 
-router.patch("/entrega-finalizada", (req, res, next) => {
-
-});
-
-router.get("/rastrear-pedido", (req, res, next) => {
+router.get("/rastrear-pedido", async (req, res, next) => {
 
 });
 
