@@ -124,7 +124,7 @@ router.get("/listar", async (req, res, next) => {
         res.status(200).json(pendingFreights);
     } 
     catch (error) {
-        console.log("\n Error on pending freights: ", error, "\n");
+        console.log("\n Error on listing pending freights: ", error, "\n");
 
         res.status(500).json({});
     }
@@ -207,8 +207,35 @@ router.patch("/finalizar", async (req, res, next) => {
     }
 });
 
-router.get("/rastrear-pedido", async (req, res, next) => {
+router.get("/rastrear", async (req, res, next) => {
+    const sequelize = database();
+    const { "order-id": orderId } = req.query;
 
+    try {
+        await sequelize.authenticate();
+
+        await Freight.init(sequelize);
+
+        const freight = await Freight.findOne({
+            where: {
+                orderId: orderId
+            }
+        });
+
+        res.status(200).json({ deliveryStatus: freight.deliveryStatus });
+    } 
+    catch (error) {
+        console.log("\n Error on retrieving freight delivery status: ", error, "\n");
+
+        res.status(500).json({
+            status: 500,
+            errorId: 0,
+            message: "Erro ao obter status do pedido do frete."
+        });
+    }
+    finally {
+        await sequelize.close();
+    }
 });
 
 module.exports = router;
