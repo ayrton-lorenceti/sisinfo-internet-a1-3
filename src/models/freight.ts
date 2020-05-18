@@ -5,26 +5,26 @@ module.exports = class Freight extends Sequelize.Model {
         return super.init({
             orderId: {
                 type: Sequelize.INTEGER,
+                notNull: true,
                 validate: {
                     isNumeric: true,
                     isInt: true,
-                    notNull: true
                 }
             },
             originUF: {
                 type: Sequelize.STRING,
+                notNull: true,
                 validate: {
                     isAlpha: true,
-                    isUppercase: true,
-                    notNull: true
+                    isUppercase: true
                 }
             },
             destinationUF: {
                 type: Sequelize.STRING,
+                notNull: true,
                 validate: {
                     isAlpha: true,
-                    isUppercase: true,
-                    notNull: true
+                    isUppercase: true
                 }
             }
         }, {

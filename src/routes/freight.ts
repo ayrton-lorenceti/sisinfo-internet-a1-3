@@ -1,8 +1,32 @@
 const express = require("express");
 const router = express.Router();
+const database = require("../config/database");
+const Freight = require("../models/freight");
 
-router.post("/", (req, res, next) => {
-    res.status(200).json(req.body);
+router.post("/", async (req, res, next) => {
+    const sequelize = database();
+
+    try {
+        await sequelize.authenticate();
+    
+        const freight = Freight.init(sequelize);
+    
+        // await freight.sync({ force: true });
+
+        const result = await freight.create(req.body);
+
+        res.status(201).json(result.dataValues);
+    } 
+    catch (error) {
+        console.log("\n Error on inserting new freight: ", error, "\n");
+        
+        if(error.errors) res.status(500).json(error);
+
+        res.status(500).json(error.message);
+    }
+    finally {
+        await sequelize.close();
+    }
 })
 
 // router.post("/inserir-pedido-frete", (req, res, next) => {
